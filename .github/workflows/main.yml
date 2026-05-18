@@ -1,26 +1,26 @@
-import requests
-from bs4 import BeautifulSoup
+name: Monitor Mercari
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s81DF0NFGnSanoEIeQxkAIigAQctPpgTax2-OG9MAFcaUD1ikkfeJsEDZ"
+on:
+  schedule:
+    - cron: '*/10 * * * *'
 
-SEARCH_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
+  workflow_dispatch:
 
-headers = {
-    "User-Agent": "Mozilla/5.0"
-}
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
 
-response = requests.get(SEARCH_URL, headers=headers)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-if response.status_code == 200:
-    soup = BeautifulSoup(response.text, "html.parser")
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    items = soup.find_all("mer-item-thumbnail")
+      - name: Install packages
+        run: pip install -r requirements.txt
 
-    if items:
-        message = "ごちうさ ONKYO に新着の可能性があります！\n"
-        message += SEARCH_URL
-
-        requests.post(
-            WEBHOOK_URL,
-            json={"content": message}
-        )
+      - name: Run script
+        run: python main.py
