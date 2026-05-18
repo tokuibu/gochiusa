@@ -11,7 +11,7 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s
 
 MERCARI_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
 
-SURUGAYA_URL = "https://www.suruga-ya.jp/search?search_word=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO"
+SURUGAYA_URL = "https://www.suruga-ya.jp/search?category=&search_word=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO"
 
 LAST_MERCARI = "last_mercari.txt"
 LAST_SURUGAYA = "last_surugaya.txt"
