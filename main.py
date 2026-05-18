@@ -83,20 +83,17 @@ response = requests.get(SURUGAYA_URL, headers=headers)
 
 if response.status_code == 200:
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    html = response.text
 
-    links = soup.find_all("a")
+    import re
+
+    matches = re.findall(r'/product/detail/[0-9]+', html)
 
     surugaya_url = None
 
-    for link in links:
+    if matches:
 
-        href = link.get("href")
-
-        if href and "/product/detail/" in href:
-
-            surugaya_url = "https://www.suruga-ya.jp" + href
-            break
+        surugaya_url = "https://www.suruga-ya.jp" + matches[0]
 
     if surugaya_url:
 
