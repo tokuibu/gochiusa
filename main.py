@@ -85,14 +85,18 @@ driver2 = webdriver.Chrome(options=options)
 
 try:
 
+    driver2.get("https://www.suruga-ya.jp")
+
+    time.sleep(5)
+
     driver2.get(SURUGAYA_URL)
+
+    time.sleep(15)
 
     requests.post(
         WEBHOOK_URL,
-        json={"content": "駿河屋ページアクセス成功"}
+        json={"content": "駿河屋検索ページアクセス成功"}
     )
-
-    time.sleep(10)
 
     links = driver2.find_elements(By.TAG_NAME, "a")
 
@@ -101,49 +105,18 @@ try:
         json={"content": f"リンク数: {len(links)}"}
     )
 
-    surugaya_url = None
-
     for link in links:
 
         href = link.get_attribute("href")
 
-        if href and "/product/detail/" in href:
-
-            href = href.split("?")[0]
-
-            surugaya_url = href
-            break
-
-    if surugaya_url:
-
-        old_url = ""
-
-        if os.path.exists(LAST_SURUGAYA):
-
-            with open(LAST_SURUGAYA, "r") as f:
-                old_url = f.read().strip()
-
-        if surugaya_url != old_url:
+        if href:
 
             requests.post(
                 WEBHOOK_URL,
                 json={
-                    "content":
-                    f"【駿河屋新着】\n{surugaya_url}"
+                    "content": f"取得リンク:\n{href}"
                 }
             )
-
-            with open(LAST_SURUGAYA, "w") as f:
-                f.write(surugaya_url)
-
-    else:
-
-        requests.post(
-            WEBHOOK_URL,
-            json={
-                "content": "駿河屋商品検出失敗"
-            }
-        )
 
 finally:
 
