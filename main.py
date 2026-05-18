@@ -10,10 +10,10 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s
 
 MERCARI_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
 
-SURUGAYA_URL = "https://www.suruga-ya.jp/search?search_word=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO"
+YAHOO_URL = "https://auctions.yahoo.co.jp/search/search?p=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO"
 
 LAST_MERCARI = "last_mercari.txt"
-LAST_SURUGAYA = "last_surugaya.txt"
+LAST_YAHOO = "last_yahoo.txt"
 
 options = Options()
 options.add_argument("--headless")
@@ -73,50 +73,52 @@ finally:
     driver.quit()
 
 # -----------------
-# 駿河屋監視
+# ヤフオク監視
 # -----------------
-
-requests.post(
-    WEBHOOK_URL,
-    json={"content": "駿河屋監視開始"}
-)
 
 driver2 = webdriver.Chrome(options=options)
 
 try:
 
-    driver2.get("https://www.suruga-ya.jp")
+    driver2.get(YAHOO_URL)
 
-    time.sleep(5)
-
-    driver2.get(SURUGAYA_URL)
-
-    time.sleep(15)
-
-    requests.post(
-        WEBHOOK_URL,
-        json={"content": "駿河屋検索ページアクセス成功"}
-    )
+    time.sleep(10)
 
     links = driver2.find_elements(By.TAG_NAME, "a")
 
-    requests.post(
-        WEBHOOK_URL,
-        json={"content": f"リンク数: {len(links)}"}
-    )
+    yahoo_url = None
 
     for link in links:
 
         href = link.get_attribute("href")
 
-        if href:
+        if href and "/auction/" in href:
+
+            href = href.split("?")[0]
+
+            yahoo_url = href
+            break
+
+    if yahoo_url:
+
+        old_url = ""
+
+        if os.path.exists(LAST_YAHOO):
+
+            with open(LAST_YAHOO, "r") as f:
+                old_url = f.read().strip()
+
+        if yahoo_url != old_url:
 
             requests.post(
                 WEBHOOK_URL,
                 json={
-                    "content": f"取得リンク:\n{href}"
+                    "content": f"【ヤフオク新着】\n{yahoo_url}"
                 }
             )
+
+            with open(LAST_YAHOO, "w") as f:
+                f.write(yahoo_url)
 
 finally:
 
