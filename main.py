@@ -5,7 +5,6 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
 
 WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s81DF0NFGnSanoEIeQxkAIigAQctPpgTax2-OG9MAFcaUD1ikkfeJsEDZ"
 
@@ -16,14 +15,14 @@ SURUGAYA_URL = "https://www.suruga-ya.jp/search?search_word=%E3%81%94%E3%81%A1%E
 LAST_MERCARI = "last_mercari.txt"
 LAST_SURUGAYA = "last_surugaya.txt"
 
-# -----------------
-# メルカリ監視
-# -----------------
-
 options = Options()
 options.add_argument("--headless")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
+
+# -----------------
+# メルカリ監視
+# -----------------
 
 driver = webdriver.Chrome(options=options)
 
@@ -42,6 +41,8 @@ try:
         href = link.get_attribute("href")
 
         if href and "/item/" in href:
+
+            href = href.split("?")[0]
 
             mercari_url = href
             break
@@ -86,23 +87,23 @@ try:
 
     driver2.get(SURUGAYA_URL)
 
-requests.post(
-    WEBHOOK_URL,
-    json={"content": "駿河屋ページアクセス成功"}
-)
+    requests.post(
+        WEBHOOK_URL,
+        json={"content": "駿河屋ページアクセス成功"}
+    )
 
-time.sleep(5)
+    time.sleep(10)
 
     links = driver2.find_elements(By.TAG_NAME, "a")
 
+    requests.post(
+        WEBHOOK_URL,
+        json={"content": f"リンク数: {len(links)}"}
+    )
+
     surugaya_url = None
 
-requests.post(
-    WEBHOOK_URL,
-    json={"content": f"リンク数: {len(links)}"}
-)
-
-for link in links:
+    for link in links:
 
         href = link.get_attribute("href")
 
@@ -134,6 +135,15 @@ for link in links:
 
             with open(LAST_SURUGAYA, "w") as f:
                 f.write(surugaya_url)
+
+    else:
+
+        requests.post(
+            WEBHOOK_URL,
+            json={
+                "content": "駿河屋商品検出失敗"
+            }
+        )
 
 finally:
 
