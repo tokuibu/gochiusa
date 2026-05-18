@@ -25,3 +25,14 @@ jobs:
 
       - name: Run script
         run: python main.py
+      
+      - name: Commit last_url
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add last_url.txt
+
+          git commit -m "update last url" || echo "No changes"
+
+          git push
