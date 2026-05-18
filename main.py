@@ -11,7 +11,7 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s
 
 MERCARI_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
 
-SURUGAYA_URL = "https://www.suruga-ya.jp/search?search_word=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO&searchbox=1"
+SURUGAYA_URL = "https://www.suruga-ya.jp/search?search_word=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO"
 
 LAST_MERCARI = "last_mercari.txt"
 LAST_SURUGAYA = "last_surugaya.txt"
@@ -75,32 +75,27 @@ finally:
 # 駿河屋監視
 # -----------------
 
-headers = {
-    "User-Agent": "Mozilla/5.0"
-}
+driver2 = webdriver.Chrome(options=options)
 
-response = requests.get(SURUGAYA_URL, headers=headers)
+try:
 
-if response.status_code == 200:
+    driver2.get(SURUGAYA_URL)
 
-    html = response.text
+    time.sleep(5)
 
-    import re
-
-    matches = re.findall(
-        r'/product/detail/[0-9]+',
-        html
-    )
+    links = driver2.find_elements(By.TAG_NAME, "a")
 
     surugaya_url = None
 
-    for match in matches:
+    for link in links:
 
-        url = "https://www.suruga-ya.jp" + match
+        href = link.get_attribute("href")
 
-        if "photo" not in url:
+        if href and "/product/detail/" in href:
 
-            surugaya_url = url
+            href = href.split("?")[0]
+
+            surugaya_url = href
             break
 
     if surugaya_url:
@@ -125,22 +120,6 @@ if response.status_code == 200:
             with open(LAST_SURUGAYA, "w") as f:
                 f.write(surugaya_url)
 
-    else:
+finally:
 
-        requests.post(
-            WEBHOOK_URL,
-            json={
-                "content":
-                "駿河屋 商品検出失敗"
-            }
-        )
-
-else:
-
-    requests.post(
-        WEBHOOK_URL,
-        json={
-            "content":
-            "駿河屋 アクセス失敗"
-        }
-    )
+    driver2.quit()
