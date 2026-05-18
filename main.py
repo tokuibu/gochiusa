@@ -1,6 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
-import os
+import re
 
 WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s81DF0NFGnSanoEIeQxkAIigAQctPpgTax2-OG9MAFcaUD1ikkfeJsEDZ"
 
@@ -13,37 +12,35 @@ headers = {
 response = requests.get(SEARCH_URL, headers=headers)
 
 if response.status_code != 200:
+
     requests.post(
         WEBHOOK_URL,
         json={"content": "メルカリ取得失敗"}
     )
+
     exit()
 
-soup = BeautifulSoup(response.text, "html.parser")
+html = response.text
 
-links = soup.find_all("a")
+matches = re.findall(r'/item/[A-Za-z0-9]+', html)
 
-sent = False
+if matches:
 
-for link in links:
+    item_url = "https://jp.mercari.com" + matches[0]
 
-    href = link.get("href")
-
-    if href and "/item/" in href:
-
-        item_url = "https://jp.mercari.com" + href
-
-        message = {
-            "content": f"【新着候補】\n{item_url}"
-        }
-
-        requests.post(WEBHOOK_URL, json=message)
-
-        sent = True
-        break
-
-if not sent:
     requests.post(
         WEBHOOK_URL,
-        json={"content": "商品が見つかりませんでした"}
+        json={
+            "content": f"【商品検出】\n{item_url}"
+        }
+    )
+
+else:
+
+    requests.post(
+        WEBHOOK_URL,
+        json={
+            "content": "商品リンク検出失敗"
+        }
+    )
     )
