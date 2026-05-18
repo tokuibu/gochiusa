@@ -75,19 +75,34 @@ finally:
 # 駿河屋監視
 # -----------------
 
+requests.post(
+    WEBHOOK_URL,
+    json={"content": "駿河屋監視開始"}
+)
+
 driver2 = webdriver.Chrome(options=options)
 
 try:
 
     driver2.get(SURUGAYA_URL)
 
-    time.sleep(5)
+requests.post(
+    WEBHOOK_URL,
+    json={"content": "駿河屋ページアクセス成功"}
+)
+
+time.sleep(5)
 
     links = driver2.find_elements(By.TAG_NAME, "a")
 
     surugaya_url = None
 
-    for link in links:
+requests.post(
+    WEBHOOK_URL,
+    json={"content": f"リンク数: {len(links)}"}
+)
+
+for link in links:
 
         href = link.get_attribute("href")
 
