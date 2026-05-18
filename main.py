@@ -11,7 +11,7 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s
 
 MERCARI_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
 
-SURUGAYA_URL = "https://www.suruga-ya.jp/search?category=&search_word=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO"
+SURUGAYA_URL = "https://www.suruga-ya.jp/search?search_word=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO&searchbox=1"
 
 LAST_MERCARI = "last_mercari.txt"
 LAST_SURUGAYA = "last_surugaya.txt"
@@ -82,23 +82,26 @@ headers = {
 response = requests.get(SURUGAYA_URL, headers=headers)
 
 if response.status_code == 200:
-    
-    requests.post(
-        WEBHOOK_URL,
-        json={"content": "駿河屋アクセス成功"}
-    )
-   
+
     html = response.text
 
     import re
 
-    matches = re.findall(r'/product/detail/[0-9]+', html)
+    matches = re.findall(
+        r'/product/detail/[0-9]+',
+        html
+    )
 
     surugaya_url = None
 
-    if matches:
+    for match in matches:
 
-        surugaya_url = "https://www.suruga-ya.jp" + matches[0]
+        url = "https://www.suruga-ya.jp" + match
+
+        if "photo" not in url:
+
+            surugaya_url = url
+            break
 
     if surugaya_url:
 
@@ -114,9 +117,30 @@ if response.status_code == 200:
             requests.post(
                 WEBHOOK_URL,
                 json={
-                    "content": f"【駿河屋新着】\n{surugaya_url}"
+                    "content":
+                    f"【駿河屋新着】\n{surugaya_url}"
                 }
             )
 
             with open(LAST_SURUGAYA, "w") as f:
                 f.write(surugaya_url)
+
+    else:
+
+        requests.post(
+            WEBHOOK_URL,
+            json={
+                "content":
+                "駿河屋 商品検出失敗"
+            }
+        )
+
+else:
+
+    requests.post(
+        WEBHOOK_URL,
+        json={
+            "content":
+            "駿河屋 アクセス失敗"
+        }
+    )
