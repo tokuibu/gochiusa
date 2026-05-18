@@ -10,7 +10,7 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s
 
 SEARCH_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
 
-LAST_FILE = "last_item.txt"
+LAST_URL_FILE = "last_url.txt"
 
 options = Options()
 options.add_argument("--headless")
@@ -47,14 +47,14 @@ try:
 
         exit()
 
-    last_url = ""
+    old_url = ""
 
-    if os.path.exists(LAST_FILE):
+    if os.path.exists(LAST_URL_FILE):
 
-        with open(LAST_FILE, "r") as f:
-            last_url = f.read().strip()
+        with open(LAST_URL_FILE, "r") as f:
+            old_url = f.read().strip()
 
-    if item_url != last_url:
+    if item_url != old_url:
 
         requests.post(
             WEBHOOK_URL,
@@ -63,8 +63,12 @@ try:
             }
         )
 
-        with open(LAST_FILE, "w") as f:
+        with open(LAST_URL_FILE, "w") as f:
             f.write(item_url)
+
+    else:
+
+        print("同じ商品のため通知なし")
 
 finally:
 
