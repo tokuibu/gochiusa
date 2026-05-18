@@ -6,11 +6,17 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s81DF0NFGnSanoEIeQxkAIigAQctPpgTax2-OG9MAFcaUD1ikkfeJsEDZ"
+WEBHOOK_URL = "あなたのWebhook URL"
 
-MERCARI_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
+MERCARI_URLS = [
+    "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO",
+    "https://jp.mercari.com/search?keyword=%E3%81%94%E6%B3%A8%E6%96%87%E3%81%AF%E3%81%86%E3%81%95%E3%81%8E%E3%81%A7%E3%81%99%E3%81%8B%20%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3"
+]
 
-YAHOO_URL = "https://auctions.yahoo.co.jp/search/search?p=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO"
+YAHOO_URLS = [
+    "https://auctions.yahoo.co.jp/search/search?p=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO",
+    "https://auctions.yahoo.co.jp/search/search?p=%E3%81%94%E6%B3%A8%E6%96%87%E3%81%AF%E3%81%86%E3%81%95%E3%81%8E%E3%81%A7%E3%81%99%E3%81%8B+%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3"
+]
 
 LAST_MERCARI = "last_mercari.txt"
 LAST_YAHOO = "last_yahoo.txt"
@@ -28,45 +34,48 @@ driver = webdriver.Chrome(options=options)
 
 try:
 
-    driver.get(MERCARI_URL)
+    for search_url in MERCARI_URLS:
 
-    time.sleep(5)
+        driver.get(search_url)
 
-    links = driver.find_elements(By.TAG_NAME, "a")
+        time.sleep(5)
 
-    mercari_url = None
+        links = driver.find_elements(By.TAG_NAME, "a")
 
-    for link in links:
+        mercari_url = None
 
-        href = link.get_attribute("href")
+        for link in links:
 
-        if href and "/item/" in href:
+            href = link.get_attribute("href")
 
-            href = href.split("?")[0]
+            if href and "/item/" in href:
 
-            mercari_url = href
-            break
+                href = href.split("?")[0]
 
-    if mercari_url:
+                mercari_url = href
+                break
 
-        old_url = ""
+        if mercari_url:
 
-        if os.path.exists(LAST_MERCARI):
+            old_url = ""
 
-            with open(LAST_MERCARI, "r") as f:
-                old_url = f.read().strip()
+            if os.path.exists(LAST_MERCARI):
 
-        if mercari_url != old_url:
+                with open(LAST_MERCARI, "r") as f:
+                    old_url = f.read().strip()
 
-            requests.post(
-                WEBHOOK_URL,
-                json={
-                    "content": f"【メルカリ新着】\n{mercari_url}"
-                }
-            )
+            if mercari_url != old_url:
 
-            with open(LAST_MERCARI, "w") as f:
-                f.write(mercari_url)
+                requests.post(
+                    WEBHOOK_URL,
+                    json={
+                        "content":
+                        f"【メルカリ新着】\n{mercari_url}"
+                    }
+                )
+
+                with open(LAST_MERCARI, "w") as f:
+                    f.write(mercari_url)
 
 finally:
 
@@ -80,45 +89,48 @@ driver2 = webdriver.Chrome(options=options)
 
 try:
 
-    driver2.get(YAHOO_URL)
+    for search_url in YAHOO_URLS:
 
-    time.sleep(10)
+        driver2.get(search_url)
 
-    links = driver2.find_elements(By.TAG_NAME, "a")
+        time.sleep(10)
 
-    yahoo_url = None
+        links = driver2.find_elements(By.TAG_NAME, "a")
 
-    for link in links:
+        yahoo_url = None
 
-        href = link.get_attribute("href")
+        for link in links:
 
-        if href and "/auction/" in href:
+            href = link.get_attribute("href")
 
-            href = href.split("?")[0]
+            if href and "/auction/" in href:
 
-            yahoo_url = href
-            break
+                href = href.split("?")[0]
 
-    if yahoo_url:
+                yahoo_url = href
+                break
 
-        old_url = ""
+        if yahoo_url:
 
-        if os.path.exists(LAST_YAHOO):
+            old_url = ""
 
-            with open(LAST_YAHOO, "r") as f:
-                old_url = f.read().strip()
+            if os.path.exists(LAST_YAHOO):
 
-        if yahoo_url != old_url:
+                with open(LAST_YAHOO, "r") as f:
+                    old_url = f.read().strip()
 
-            requests.post(
-                WEBHOOK_URL,
-                json={
-                    "content": f"【ヤフオク新着】\n{yahoo_url}"
-                }
-            )
+            if yahoo_url != old_url:
 
-            with open(LAST_YAHOO, "w") as f:
-                f.write(yahoo_url)
+                requests.post(
+                    WEBHOOK_URL,
+                    json={
+                        "content":
+                        f"【ヤフオク新着】\n{yahoo_url}"
+                    }
+                )
+
+                with open(LAST_YAHOO, "w") as f:
+                    f.write(yahoo_url)
 
 finally:
 
