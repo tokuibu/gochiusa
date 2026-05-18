@@ -82,7 +82,12 @@ headers = {
 response = requests.get(SURUGAYA_URL, headers=headers)
 
 if response.status_code == 200:
-
+    
+    requests.post(
+        WEBHOOK_URL,
+        json={"content": "駿河屋アクセス成功"}
+    )
+   
     html = response.text
 
     import re
