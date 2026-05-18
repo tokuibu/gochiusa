@@ -9,9 +9,9 @@ from selenium.webdriver.chrome.options import Options
 WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s81DF0NFGnSanoEIeQxkAIigAQctPpgTax2-OG9MAFcaUD1ikkfeJsEDZ"
 
 MERCARI_URLS = [
-　　"https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO&sort=created_time&order=desc",
+    "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO&sort=created_time&order=desc",
 
-　　"https://jp.mercari.com/search?keyword=%E3%81%94%E6%B3%A8%E6%96%87%E3%81%AF%E3%81%86%E3%81%95%E3%81%8E%E3%81%A7%E3%81%99%E3%81%8B%20%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3&sort=created_time&order=desc"
+    "https://jp.mercari.com/search?keyword=%E3%81%94%E6%B3%A8%E6%96%87%E3%81%AF%E3%81%86%E3%81%95%E3%81%8E%E3%81%A7%E3%81%99%E3%81%8B%20%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3&sort=created_time&order=desc"
 ]
 
 YAHOO_URLS = [
