@@ -1,5 +1,6 @@
 import requests
 import time
+import os
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -8,6 +9,8 @@ from selenium.webdriver.chrome.options import Options
 WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s81DF0NFGnSanoEIeQxkAIigAQctPpgTax2-OG9MAFcaUD1ikkfeJsEDZ"
 
 SEARCH_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
+
+LAST_FILE = "last_item.txt"
 
 options = Options()
 options.add_argument("--headless")
@@ -24,7 +27,7 @@ try:
 
     links = driver.find_elements(By.TAG_NAME, "a")
 
-    found = False
+    item_url = None
 
     for link in links:
 
@@ -32,24 +35,36 @@ try:
 
         if href and "/item/" in href:
 
-            requests.post(
-                WEBHOOK_URL,
-                json={
-                    "content": f"【商品検出】\n{href}"
-                }
-            )
-
-            found = True
+            item_url = href
             break
 
-    if not found:
+    if not item_url:
+
+        requests.post(
+            WEBHOOK_URL,
+            json={"content": "商品リンク検出失敗"}
+        )
+
+        exit()
+
+    last_url = ""
+
+    if os.path.exists(LAST_FILE):
+
+        with open(LAST_FILE, "r") as f:
+            last_url = f.read().strip()
+
+    if item_url != last_url:
 
         requests.post(
             WEBHOOK_URL,
             json={
-                "content": "商品リンク検出失敗"
+                "content": f"【新着商品】\n{item_url}"
             }
         )
+
+        with open(LAST_FILE, "w") as f:
+            f.write(item_url)
 
 finally:
 
