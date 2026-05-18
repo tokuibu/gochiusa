@@ -1,7 +1,8 @@
 import requests
 import re
+import json
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s81DF0NFGnSanoEIeQxkAIigAQctPpgTax2-OG9MAFcaUD1ikkfeJsEDZ"
+WEBHOOK_URL = "あなたのWebhook URL"
 
 SEARCH_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
 
@@ -22,11 +23,13 @@ if response.status_code != 200:
 
 html = response.text
 
-matches = re.findall(r'/item/[A-Za-z0-9]+', html)
+matches = re.findall(r'"id":"(m[0-9]+)"', html)
 
 if matches:
 
-    item_url = "https://jp.mercari.com" + matches[0]
+    item_id = matches[0]
+
+    item_url = f"https://jp.mercari.com/item/{item_id}"
 
     requests.post(
         WEBHOOK_URL,
@@ -40,6 +43,6 @@ else:
     requests.post(
         WEBHOOK_URL,
         json={
-            "content": "商品リンク検出失敗"
+            "content": "商品ID検出失敗"
         }
     )
