@@ -5,12 +5,20 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1505806483198050324/7caQ_Y_5pA-s81DF0NFGnSanoEIeQxkAIigAQctPpgTax2-OG9MAFcaUD1ikkfeJsEDZ"
+WEBHOOK_URL = "あなたのWebhook URL"
 
-SEARCH_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
+MERCARI_URL = "https://jp.mercari.com/search?keyword=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95%20ONKYO"
 
-LAST_URL_FILE = "last_url.txt"
+SURUGAYA_URL = "https://www.suruga-ya.jp/search?search_word=%E3%81%94%E3%81%A1%E3%81%86%E3%81%95+ONKYO"
+
+LAST_MERCARI = "last_mercari.txt"
+LAST_SURUGAYA = "last_surugaya.txt"
+
+# -----------------
+# メルカリ監視
+# -----------------
 
 options = Options()
 options.add_argument("--headless")
@@ -21,13 +29,13 @@ driver = webdriver.Chrome(options=options)
 
 try:
 
-    driver.get(SEARCH_URL)
+    driver.get(MERCARI_URL)
 
     time.sleep(5)
 
     links = driver.find_elements(By.TAG_NAME, "a")
 
-    item_url = None
+    mercari_url = None
 
     for link in links:
 
@@ -35,41 +43,78 @@ try:
 
         if href and "/item/" in href:
 
-            item_url = href
+            mercari_url = href
             break
 
-    if not item_url:
+    if mercari_url:
 
-        requests.post(
-            WEBHOOK_URL,
-            json={"content": "商品リンク検出失敗"}
-        )
+        old_url = ""
 
-        exit()
+        if os.path.exists(LAST_MERCARI):
 
-    old_url = ""
+            with open(LAST_MERCARI, "r") as f:
+                old_url = f.read().strip()
 
-    if os.path.exists(LAST_URL_FILE):
+        if mercari_url != old_url:
 
-        with open(LAST_URL_FILE, "r") as f:
-            old_url = f.read().strip()
+            requests.post(
+                WEBHOOK_URL,
+                json={
+                    "content": f"【メルカリ新着】\n{mercari_url}"
+                }
+            )
 
-    if item_url != old_url:
-
-        requests.post(
-            WEBHOOK_URL,
-            json={
-                "content": f"【新着商品】\n{item_url}"
-            }
-        )
-
-        with open(LAST_URL_FILE, "w") as f:
-            f.write(item_url)
-
-    else:
-
-        print("同じ商品のため通知なし")
+            with open(LAST_MERCARI, "w") as f:
+                f.write(mercari_url)
 
 finally:
 
     driver.quit()
+
+# -----------------
+# 駿河屋監視
+# -----------------
+
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+response = requests.get(SURUGAYA_URL, headers=headers)
+
+if response.status_code == 200:
+
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    links = soup.find_all("a")
+
+    surugaya_url = None
+
+    for link in links:
+
+        href = link.get("href")
+
+        if href and "/product/detail/" in href:
+
+            surugaya_url = "https://www.suruga-ya.jp" + href
+            break
+
+    if surugaya_url:
+
+        old_url = ""
+
+        if os.path.exists(LAST_SURUGAYA):
+
+            with open(LAST_SURUGAYA, "r") as f:
+                old_url = f.read().strip()
+
+        if surugaya_url != old_url:
+
+            requests.post(
+                WEBHOOK_URL,
+                json={
+                    "content": f"【駿河屋新着】\n{surugaya_url}"
+                }
+            )
+
+            with open(LAST_SURUGAYA, "w") as f:
+                f.write(surugaya_url)
